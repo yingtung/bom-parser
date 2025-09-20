@@ -50,6 +50,11 @@ services:
     ports:
       - "5432:5432"
 
+  redis:
+    restart: "no"
+    ports:
+      - "6379:6379"
+
   adminer:
     restart: "no"
     ports:
@@ -80,11 +85,35 @@ services:
     # TODO: remove once coverage is done locally
     volumes:
       - ./backend/htmlcov:/app/htmlcov
+      - ./service-account.json:/app/service-account.json:ro
     environment:
       SMTP_HOST: "mailcatcher"
       SMTP_PORT: "1025"
       SMTP_TLS: "false"
       EMAILS_FROM_EMAIL: "noreply@example.com"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      GOOGLE_APPLICATION_CREDENTIALS: "/app/service-account.json"
+
+  celery-worker:
+    restart: "no"
+    command: [ "celery", "-A", "app.tasks", "worker", "--loglevel=info" ]
+    volumes:
+      - ./service-account.json:/app/service-account.json:ro
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  flower:
+    restart: "no"
+    ports:
+      - "5555:5555"
+    command: [ "celery", "-A", "app.tasks", "flower", "--port=5555" ]
+    volumes:
+      - ./service-account.json:/app/service-account.json:ro
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
   mailcatcher:
     image: schickling/mailcatcher

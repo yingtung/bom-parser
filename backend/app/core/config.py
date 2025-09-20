@@ -94,6 +94,27 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
 
+    # Google Cloud Platform settings
+    GOOGLE_APPLICATION_CREDENTIALS: str | None = None
+    GCP_PROJECT_ID: str | None = None
+    GCP_LOCATION: str = "us"
+    GCP_PROCESSOR_ID: str | None = None
+    GCP_PROCESSOR_VERSION: str = "stable"
+    GCS_BUCKET_NAME: str | None = None
+
+    # Celery settings
+    REDIS_HOST: str | None = None
+    REDIS_PORT: str | None = None
+
+    def get_upload_bucket_name(self, file_key: str):
+        return f"{self.GCS_BUCKET_NAME}/upload/{file_key}"
+
+    def get_process_bucket_name(self, file_key: str):
+        return f"{self.GCS_BUCKET_NAME}/process/{file_key}"
+
+    def get_download_bucket_name(self, file_key: str):
+        return f"{self.GCS_BUCKET_NAME}/download/{file_key}"
+
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
             message = (

@@ -1,4 +1,5 @@
 import logging
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -121,3 +122,42 @@ def verify_password_reset_token(token: str) -> str | None:
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
+
+
+def camel_to_snake(text):
+    """Converts a string from camelCase to snake_case."""
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", text).lower()
+
+
+def convert_keys(data):
+    """Recursively converts all dictionary keys in a JSON object to snake_case."""
+    if isinstance(data, dict):
+        new_dict = {}
+        for key, value in data.items():
+            new_key = camel_to_snake(key)
+            new_dict[new_key] = convert_keys(value)
+        return new_dict
+    elif isinstance(data, list):
+        return [convert_keys(item) for item in data]
+    else:
+        return data
+
+
+def extract_numeric_value(text: str) -> int:
+    """
+    Extract the first numeric value from a string for sorting purposes.
+
+    Args:
+        text: String that may contain digits and non-digits
+
+    Returns:
+        Integer value extracted from the string, or 0 if no digits found
+    """
+    if not text:
+        return 0
+
+    # Find all numeric sequences in the string
+    numbers = re.findall(r"\d+", str(text))
+    if numbers:
+        return int(numbers[0])  # Return the first number found
+    return 0  # Return 0 if no digits found
