@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from functools import lru_cache
 from typing import Annotated
 
 import jwt
@@ -12,6 +13,8 @@ from app.core import security
 from app.core.config import settings
 from app.core.db import engine
 from app.models import TokenPayload, User
+from app.services import get_document_ai_service
+from app.services.document_ai import DocumentAIService
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -55,3 +58,12 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
             status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+CurrentActiveSuperuser = Annotated[User, Depends(get_current_active_superuser)]
+
+
+@lru_cache
+def get_document_ai_service_dependency() -> DocumentAIService:
+    """FastAPI dependency for DocumentAIService."""
+    return get_document_ai_service()

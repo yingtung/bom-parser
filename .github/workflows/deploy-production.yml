@@ -25,8 +25,15 @@ jobs:
       EMAILS_FROM_EMAIL: ${{ secrets.EMAILS_FROM_EMAIL }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+      SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.SERVICE_ACCOUNT_JSON_BASE64 }}
+      ENV_FILE_BASE64: ${{ secrets.ENV_FILE_BASE64_PRODUCTION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+      - name: Retrieve the secret and decode it to a file
+        run: |
+          echo $SERVICE_ACCOUNT_JSON_BASE64 | base64 --decode > service-account.json
+          echo $ENV_FILE_BASE64 | base64 --decode > .env
       - run: docker compose -f docker-compose.yml --project-name ${{ secrets.STACK_NAME_PRODUCTION }} build
       - run: docker compose -f docker-compose.yml --project-name ${{ secrets.STACK_NAME_PRODUCTION }} up -d

@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, DocumentUploadRequest, SignedURLResponse, DocumentProcessRequest, DocumentProcessResponse, DocumentConvertRequest, DocumentConvertResponse, TaskStatusResponse, TaskResultResponse, OperationStatusRequest, OperationStatusResponse } from './types.gen';
 
 export class ItemsService {
     /**
@@ -463,6 +463,159 @@ export class UtilsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/utils/health-check/'
+        });
+    }
+}
+
+export class DocumentService {
+    /**
+     * Upload Document - Get signed URL for file upload
+     * @param data The data for the request
+     * @returns SignedURLResponse
+     * @throws ApiError
+     */
+    public static uploadDocument(data: DocumentUploadRequest): CancelablePromise<SignedURLResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/document/upload',
+            body: data,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    /**
+     * Process Document - Start document processing task
+     * @param data The data for the request
+     * @returns DocumentProcessResponse
+     * @throws ApiError
+     */
+    public static processDocument(data: DocumentProcessRequest): CancelablePromise<DocumentProcessResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/document/process',
+            body: data,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    /**
+     * Convert Document - Convert processed document to Excel
+     * @param data The data for the request
+     * @returns DocumentConvertResponse
+     * @throws ApiError
+     */
+    public static convertDocument(data: DocumentConvertRequest): CancelablePromise<DocumentConvertResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/document/convert',
+            body: data,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    /**
+     * Get Operation Status - Check if a Google Cloud operation is done
+     * @param data The data for the request
+     * @param data.operation_name The operation name
+     * @returns OperationStatusResponse
+     * @throws ApiError
+     */
+    public static getOperationStatus(data: OperationStatusRequest): CancelablePromise<OperationStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/document/operation',
+            body: data,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Bad Request',
+                404: 'Operation not found'
+            }
+        });
+    }
+
+    /**
+     * Download Document - Download the converted Excel file
+     * @param gcsDownloadPath The GCS download path
+     * @returns SignedURLResponse
+     * @throws ApiError
+     */
+    public static downloadDocument(gcsDownloadPath: string): CancelablePromise<SignedURLResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: `/api/v1/document/download`,
+            query: {
+                gcs_download_path: gcsDownloadPath
+            },
+            errors: {
+                404: 'File not found'
+            }
+        });
+    }
+
+}
+
+export class TaskService {
+    /**
+     * Cancel Task
+     * Cancel a running Celery task
+     * @param taskId The task ID to cancel
+     * @returns Message
+     * @throws ApiError
+     */
+
+     /**
+     * Get Task Status - Get the status of a Celery task
+     * @param taskId The task ID
+     * @returns TaskStatusResponse
+     * @throws ApiError
+     */
+    public static getTaskStatus(taskId: string): CancelablePromise<TaskStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: `/api/v1/task/${taskId}/status`,
+            errors: {
+                404: 'Task not found'
+            }
+        });   
+    }
+    /**
+     * Get Task Result - Get the result of a completed Celery task
+     * @param taskId The task ID
+     * @returns TaskResultResponse
+     * @throws ApiError
+     */
+    public static getTaskResult(taskId: string): CancelablePromise<TaskResultResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: `/api/v1/task/${taskId}/result`,
+            errors: {
+                404: 'Task not found'
+            }
+        });
+    }
+
+    /**
+     * Cancel Task - Cancel a running Celery task
+     * @param taskId The task ID to cancel
+     * @returns Message
+     * @throws ApiError
+     */
+    public static cancelTask(taskId: string): CancelablePromise<{ message: string }> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: `/api/v1/task/${taskId}`,
+            errors: {
+                404: 'Task not found'
+            }
         });
     }
 }
