@@ -1,6 +1,13 @@
 import type { ApiError } from "./client"
 import useCustomToast from "./hooks/useCustomToast"
 
+// Utility function for conditional class names
+export const cn = (
+  ...classes: (string | undefined | null | false)[]
+): string => {
+  return classes.filter(Boolean).join(" ")
+}
+
 export const emailPattern = {
   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
   message: "Invalid email address",

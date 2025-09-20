@@ -232,3 +232,51 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+// Document-related types
+export type DocumentUploadRequest = {
+    file_name: string;
+    content_type: string;
+};
+
+export type SignedURLResponse = {
+    signed_url: string;
+    file_key: string;
+    file_name: string;
+};
+
+export type DocumentProcessRequest = {
+    file_key: string;
+    file_name: string;
+};
+
+export type DocumentProcessResponse = {
+    task_id: string;
+};
+
+export type DocumentConvertRequest = {
+    file_key: string;
+};
+
+export type DocumentConvertResponse = {
+    task_id: string;
+};
+
+export type TaskStatusResponse = {
+    status: 'PENDING' | 'STARTED' | 'RETRY' | 'FAILURE' | 'SUCCESS';
+};
+
+export type TaskResultResponse = {
+    operation_name?: string;
+    gcs_download_path?: string;
+    status?: string;
+    error?: string;
+};
+
+export type OperationStatusRequest = {
+    operation_name: string;
+};
+
+export type OperationStatusResponse = {
+    done: boolean;
+};
