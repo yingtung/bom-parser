@@ -136,5 +136,9 @@ class Settings(BaseSettings):
 
         return self
 
+    @property
+    def is_local(self) -> bool:
+        return self.ENVIRONMENT == "local"
+
 
 settings = Settings()  # type: ignore
