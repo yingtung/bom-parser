@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   FiAlertCircle,
   FiCheckCircle,
@@ -20,7 +20,7 @@ import {
   FiFileText,
   FiUpload,
 } from "react-icons/fi"
-import { DocumentService, TaskService } from "@/client"
+import { DocumentService, TasksService, UtilsService } from "@/client"
 
 export const Route = createFileRoute("/_layout/")({
   component: Dashboard,
@@ -48,10 +48,29 @@ function Dashboard() {
   })
   const [downloadUrl, setDownloadUrl] = useState<string>("")
   const [showDownload, setShowDownload] = useState(false)
+  const [operationInfo, setOperationInfo] = useState<{
+    gcp_processor_version: string
+    gcp_project_id: string | null
+    gcp_location: string
+    gcp_processor_id: string | null
+  } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const statusCheckInterval = useRef<NodeJS.Timeout | null>(null)
   const operationCheckInterval = useRef<NodeJS.Timeout | null>(null)
   const convertCheckInterval = useRef<NodeJS.Timeout | null>(null)
+
+  // Fetch operation info on component mount
+  useEffect(() => {
+    const fetchOperationInfo = async () => {
+      try {
+        const info = await UtilsService.getOperationInfo()
+        setOperationInfo(info)
+      } catch (error) {
+        console.error("Failed to fetch operation info:", error)
+      }
+    }
+    fetchOperationInfo()
+  }, [])
 
   const updateStatus = (
     stage: UploadStatus["stage"],
@@ -88,16 +107,18 @@ function Dashboard() {
 
   const handleFileUpload = async (file: File) => {
     try {
-      updateStatus("uploading", "正在準備上傳...", 10)
+      updateStatus("uploading", "正在準備上傳,請稍候...", 10)
 
       // Step 1: 請求簽名 URL
-      const uploadResponse = await DocumentService.uploadDocument({
-        file_name: file.name,
-        content_type: file.type,
+      const uploadResponse = await DocumentService.generateSignedUrlEndpoint({
+        requestBody: {
+          file_name: file.name,
+          content_type: file.type,
+        }
       })
 
-      const { signed_url, file_key, file_name } = uploadResponse
-      updateStatus("uploading", "檔案正在上傳中...", 30)
+      const { signed_url, file_key, file_name } = uploadResponse as any
+      updateStatus("uploading", "檔案正在上傳中,請不要關閉此頁面...", 30)
 
       // Step 2: 直接上傳檔案到 GCS
       const gcsUploadResponse = await fetch(signed_url, {
@@ -113,18 +134,20 @@ function Dashboard() {
       updateStatus("processing", "上傳完成，正在排入處理佇列...", 50)
 
       // Step 3: 檔案上傳完成，通知後端開始處理任務
-      const processResponse = await DocumentService.processDocument({
-        file_key,
-        file_name,
+      const processResponse = await DocumentService.processUploadedFile({
+        requestBody: {
+          file_key,
+          file_name,
+        }
       })
 
-      const { task_id } = processResponse
+      const { task_id } = processResponse as any
       updateStatus("processing", "處理任務已啟動，請稍候...", 60)
 
       // Step 4: 輪詢任務狀態
       statusCheckInterval.current = setInterval(async () => {
         try {
-          const statusResponse = await TaskService.getTaskStatus(task_id)
+          const statusResponse = await TasksService.getTaskStatus({ taskId: task_id })
           const { status } = statusResponse
 
           if (status === "SUCCESS") {
@@ -132,7 +155,7 @@ function Dashboard() {
             updateStatus("processing", "辨識完成，查詢作業狀態中...", 70)
 
             // Step 5: 取得任務結果以取得 operation_name，並輪詢作業狀態
-            const resultResp = await TaskService.getTaskResult(task_id)
+            const resultResp = await TasksService.getTaskResult({ taskId: task_id }) as any
             const operationName = resultResp?.operation_name
 
             if (!operationName) {
@@ -142,7 +165,7 @@ function Dashboard() {
             operationCheckInterval.current = setInterval(async () => {
               try {
                 const opResp =
-                  await DocumentService.getOperationStatus({ operation_name: operationName })
+                  await DocumentService.getOperation({ requestBody: { operation_name: operationName } }) as any
                 const { done } = opResp
 
                 if (done) {
@@ -150,18 +173,18 @@ function Dashboard() {
                   updateStatus("converting", "作業完成！可進行後續轉換。", 80)
 
                   // Step 6: 轉換處理過的JSON file 成 excel
-                  const convertResponse = await DocumentService.convertDocument(
-                    {
+                  const convertResponse = await DocumentService.convertProcessedFileToExcel({
+                    requestBody: {
                       file_key,
-                    },
-                  )
+                    }
+                  })
 
-                  const { task_id: convertTaskId } = convertResponse
+                  const { task_id: convertTaskId } = convertResponse as any
                   updateStatus("converting", "轉換任務已啟動，請稍候...", 85)
 
                   convertCheckInterval.current = setInterval(async () => {
                     const convertStatusResponse =
-                      await TaskService.getTaskStatus(convertTaskId)
+                      await TasksService.getTaskStatus({ taskId: convertTaskId })
                     const { status } = convertStatusResponse
 
                     if (status === "SUCCESS") {
@@ -169,7 +192,7 @@ function Dashboard() {
                       updateStatus("completed", "轉換完成！", 100)
 
                       const resultResp =
-                        await TaskService.getTaskResult(convertTaskId)
+                        await TasksService.getTaskResult({ taskId: convertTaskId })
                       const { gcs_download_path } = resultResp
 
                       if (gcs_download_path) {
@@ -222,11 +245,19 @@ function Dashboard() {
       if (!downloadUrl) {
         throw new Error("下載 URL 不存在")
       }
-      const response = await DocumentService.downloadDocument(downloadUrl)
-      const { signed_url:download_url, file_name:fileName } = response
+      const response = await DocumentService.downloadFromGcs({ gcsDownloadPath: downloadUrl });
+      if (
+        typeof response !== "object" ||
+        response === null ||
+        !("signed_url" in response) ||
+        !("file_name" in response)
+      ) {
+        throw new Error("無法取得下載連結或檔名");
+      }
+      const { signed_url: download_url, file_name: fileName } = response as { signed_url: string, file_name: string };
       fetch(download_url)
-      .then(response => response.blob())
-      .then(blob => {
+        .then(response => response.blob())
+        .then(blob => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -279,37 +310,55 @@ function Dashboard() {
         <Icon as={FiUpload} boxSize={6} />
         PDF BOM 表格轉換器
       </Heading>
+      {/* Version Information */}
+      {operationInfo && (
+        <Box
+          bg="gray.50"
+          borderRadius="md"
+          p={2}
+          border="1px solid"
+          borderColor="gray.200"
+        >
+          <Text fontSize="sm" color="gray.600" >
+            目前使用的處理模型版本： {operationInfo.gcp_processor_version}
+          </Text>
+        </Box>
+      )}
+      <VStack align="stretch" mt={8}>
+        {/* Upload Area - Only show when idle */}
       <Text color="gray.600">
         上傳您的 PDF BOM 表格，我們將為您轉換為 Excel 格式
       </Text>
-      <VStack align="stretch">
-        {/* Upload Area */}
-        <Box
-          border="2px dashed"
-          borderColor="gray.300"
-          borderRadius="lg"
-          p={8}
-          textAlign="center"
-          cursor="pointer"
-          _hover={{ borderColor: "gray.400" }}
-          transition="border-color 0.2s"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Icon as={FiUpload} boxSize={12} color="gray.400" mb={4} />
-          <Text fontSize="lg" fontWeight="medium" color="gray.700" mb={2}>
-            點擊或拖曳 PDF 檔案至此
-          </Text>
-          <Text fontSize="sm" color="gray.500">
-            支援 PDF 格式，頁數限制 200 頁
-          </Text>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf"
-            onChange={handleFileSelect}
-            style={{ display: "none" }}
-          />
-        </Box>
+      
+      
+        {uploadStatus.stage === "idle" && (
+          <Box
+            border="2px dashed"
+            borderColor="gray.300"
+            borderRadius="lg"
+            p={8}
+            textAlign="center"
+            cursor="pointer"
+            _hover={{ borderColor: "gray.400" }}
+            transition="border-color 0.2s"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Icon as={FiUpload} boxSize={12} color="gray.400" mb={4} />
+            <Text fontSize="lg" fontWeight="medium" color="gray.700" mb={2}>
+              點擊或拖曳 PDF 檔案至此
+            </Text>
+            <Text fontSize="sm" color="gray.500">
+              支援 PDF 格式，頁數限制 200 頁
+            </Text>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              onChange={handleFileSelect}
+              style={{ display: "none" }}
+            />
+          </Box>
+        )}
 
         {/* Progress Section */}
         {uploadStatus.stage !== "idle" && (
@@ -327,6 +376,7 @@ function Dashboard() {
                 value={uploadStatus.progress}
                 colorPalette="blue"
                 variant="subtle"
+                size="lg"
               >
                 <Progress.Track>
                   <Progress.Range />

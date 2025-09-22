@@ -35,6 +35,7 @@ router = APIRouter(
 @router.post(
     "/upload",
     description="receive file information and return a signed url for frontend direct upload to GCS",
+    response_model=SignedUrlRespsonse,
 )
 async def generate_signed_url_endpoint(request: SignedUrlRequest) -> SignedUrlRespsonse:
     result = generate_signed_url_for_upload(request.file_name, request.content_type)
@@ -43,6 +44,7 @@ async def generate_signed_url_endpoint(request: SignedUrlRequest) -> SignedUrlRe
 
 @router.post(
     "/process",
+    response_model=FileProcessedResponse,
     description="Receive the file upload completion notification and then add the document AI task to the Celery task queue.",
 )
 async def process_uploaded_file(request: FileProcessedRequest) -> FileProcessedResponse:
@@ -66,7 +68,11 @@ async def process_uploaded_file(request: FileProcessedRequest) -> FileProcessedR
     )
 
 
-@router.post("/convert", description="convert the processed file to excel")
+@router.post(
+    "/convert",
+    description="convert the processed file to excel",
+    response_model=FileProcessedResponse,
+)
 async def convert_processed_file_to_excel(request: ConvertingRequest):
     # 將任務放入 Celery 佇列
     task = convert_to_excel_task.delay(
@@ -95,7 +101,11 @@ async def test(request: ConvertingRequest):
     }
 
 
-@router.get("/download", description="download excel file from gcs")
+@router.get(
+    "/download",
+    description="download excel file from gcs",
+    response_model=SignedUrlRespsonse,
+)
 async def download_from_gcs(gcs_download_path: str):
     result = generate_signed_url_for_download(gcs_download_path)
     return SignedUrlRespsonse(**result)

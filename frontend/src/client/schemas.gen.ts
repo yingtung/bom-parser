@@ -6,7 +6,7 @@ export const Body_login_login_access_tokenSchema = {
             anyOf: [
                 {
                     type: 'string',
-                    pattern: 'password'
+                    pattern: '^password$'
                 },
                 {
                     type: 'null'
@@ -20,6 +20,7 @@ export const Body_login_login_access_tokenSchema = {
         },
         password: {
             type: 'string',
+            format: 'password',
             title: 'Password'
         },
         scope: {
@@ -47,12 +48,68 @@ export const Body_login_login_access_tokenSchema = {
                     type: 'null'
                 }
             ],
+            format: 'password',
             title: 'Client Secret'
         }
     },
     type: 'object',
     required: ['username', 'password'],
     title: 'Body_login-login_access_token'
+} as const;
+
+export const CeleryTaskStatusSchema = {
+    type: 'string',
+    enum: ['PENDING', 'STARTED', 'RETRY', 'FAILURE', 'SUCCESS'],
+    title: 'CeleryTaskStatus'
+} as const;
+
+export const ConvertingRequestSchema = {
+    properties: {
+        file_key: {
+            type: 'string',
+            title: 'File Key'
+        }
+    },
+    type: 'object',
+    required: ['file_key'],
+    title: 'ConvertingRequest',
+    description: 'Request model for converting document json to excel.'
+} as const;
+
+export const FileProcessedRequestSchema = {
+    properties: {
+        file_key: {
+            type: 'string',
+            title: 'File Key'
+        },
+        file_name: {
+            type: 'string',
+            title: 'File Name'
+        }
+    },
+    type: 'object',
+    required: ['file_key', 'file_name'],
+    title: 'FileProcessedRequest'
+} as const;
+
+export const FileProcessedResponseSchema = {
+    properties: {
+        message: {
+            type: 'string',
+            title: 'Message'
+        },
+        task_id: {
+            type: 'string',
+            title: 'Task Id'
+        },
+        file_key: {
+            type: 'string',
+            title: 'File Key'
+        }
+    },
+    type: 'object',
+    required: ['message', 'task_id', 'file_key'],
+    title: 'FileProcessedResponse'
 } as const;
 
 export const HTTPValidationErrorSchema = {
@@ -67,119 +124,6 @@ export const HTTPValidationErrorSchema = {
     },
     type: 'object',
     title: 'HTTPValidationError'
-} as const;
-
-export const ItemCreateSchema = {
-    properties: {
-        title: {
-            type: 'string',
-            maxLength: 255,
-            minLength: 1,
-            title: 'Title'
-        },
-        description: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        }
-    },
-    type: 'object',
-    required: ['title'],
-    title: 'ItemCreate'
-} as const;
-
-export const ItemPublicSchema = {
-    properties: {
-        title: {
-            type: 'string',
-            maxLength: 255,
-            minLength: 1,
-            title: 'Title'
-        },
-        description: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        },
-        id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Id'
-        },
-        owner_id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Owner Id'
-        }
-    },
-    type: 'object',
-    required: ['title', 'id', 'owner_id'],
-    title: 'ItemPublic'
-} as const;
-
-export const ItemUpdateSchema = {
-    properties: {
-        title: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255,
-                    minLength: 1
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Title'
-        },
-        description: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        }
-    },
-    type: 'object',
-    title: 'ItemUpdate'
-} as const;
-
-export const ItemsPublicSchema = {
-    properties: {
-        data: {
-            items: {
-                '$ref': '#/components/schemas/ItemPublic'
-            },
-            type: 'array',
-            title: 'Data'
-        },
-        count: {
-            type: 'integer',
-            title: 'Count'
-        }
-    },
-    type: 'object',
-    required: ['data', 'count'],
-    title: 'ItemsPublic'
 } as const;
 
 export const MessageSchema = {
@@ -212,6 +156,32 @@ export const NewPasswordSchema = {
     title: 'NewPassword'
 } as const;
 
+export const OperationStatusRequestSchema = {
+    properties: {
+        operation_name: {
+            type: 'string',
+            title: 'Operation Name'
+        }
+    },
+    type: 'object',
+    required: ['operation_name'],
+    title: 'OperationStatusRequest',
+    description: 'Request model for checking operation status.'
+} as const;
+
+export const OperationStatusResponseSchema = {
+    properties: {
+        done: {
+            type: 'boolean',
+            title: 'Done'
+        }
+    },
+    type: 'object',
+    required: ['done'],
+    title: 'OperationStatusResponse',
+    description: 'Response model for operation status.'
+} as const;
+
 export const PrivateUserCreateSchema = {
     properties: {
         email: {
@@ -235,6 +205,107 @@ export const PrivateUserCreateSchema = {
     type: 'object',
     required: ['email', 'password', 'full_name'],
     title: 'PrivateUserCreate'
+} as const;
+
+export const SignedUrlRequestSchema = {
+    properties: {
+        file_name: {
+            type: 'string',
+            title: 'File Name'
+        },
+        content_type: {
+            type: 'string',
+            title: 'Content Type'
+        }
+    },
+    type: 'object',
+    required: ['file_name', 'content_type'],
+    title: 'SignedUrlRequest',
+    description: '用於生成簽名 URL 的請求模型。'
+} as const;
+
+export const SignedUrlRespsonseSchema = {
+    properties: {
+        signed_url: {
+            type: 'string',
+            title: 'Signed Url'
+        },
+        file_key: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'File Key'
+        },
+        file_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'File Name'
+        }
+    },
+    type: 'object',
+    required: ['signed_url'],
+    title: 'SignedUrlRespsonse',
+    description: '用於生成簽名 URL 的請求模型。'
+} as const;
+
+export const SystemInfoResponseSchema = {
+    properties: {
+        gcp_processor_version: {
+            type: 'string',
+            title: 'Gcp Processor Version'
+        },
+        gcp_project_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gcp Project Id'
+        },
+        gcp_location: {
+            type: 'string',
+            title: 'Gcp Location'
+        },
+        gcp_processor_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gcp Processor Id'
+        }
+    },
+    type: 'object',
+    required: ['gcp_processor_version', 'gcp_project_id', 'gcp_location', 'gcp_processor_id'],
+    title: 'SystemInfoResponse'
+} as const;
+
+export const TaskStatusResponseSchema = {
+    properties: {
+        status: {
+            '$ref': '#/components/schemas/CeleryTaskStatus'
+        }
+    },
+    type: 'object',
+    required: ['status'],
+    title: 'TaskStatusResponse'
 } as const;
 
 export const TokenSchema = {
