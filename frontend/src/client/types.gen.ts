@@ -87,6 +87,12 @@ export type SystemInfoResponse = {
     gcp_processor_id: (string | null);
 };
 
+export type TaskResultResponse = {
+    result: {
+        [key: string]: unknown;
+    };
+};
+
 export type TaskStatusResponse = {
     status: CeleryTaskStatus;
 };
@@ -225,9 +231,7 @@ export type TasksGetTaskResultData = {
     taskId: string;
 };
 
-export type TasksGetTaskResultResponse = ({
-    [key: string]: unknown;
-});
+export type TasksGetTaskResultResponse = (TaskResultResponse);
 
 export type TasksCancelTaskData = {
     taskId: string;

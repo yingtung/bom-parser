@@ -44,3 +44,8 @@ async def get_operation_info() -> SystemInfoResponse:
         gcp_location=settings.GCP_LOCATION,
         gcp_processor_id=settings.GCP_PROCESSOR_ID,
     )
+
+
+@router.get("/sentry-debug")
+async def trigger_error():
+    division_by_zero = 1 / 0  # noqa: F841
