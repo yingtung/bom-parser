@@ -9,30 +9,28 @@ export type Body_login_login_access_token = {
     client_secret?: (string | null);
 };
 
+export type CeleryTaskStatus = 'PENDING' | 'STARTED' | 'RETRY' | 'FAILURE' | 'SUCCESS';
+
+/**
+ * Request model for converting document json to excel.
+ */
+export type ConvertingRequest = {
+    file_key: string;
+};
+
+export type FileProcessedRequest = {
+    file_key: string;
+    file_name: string;
+};
+
+export type FileProcessedResponse = {
+    message: string;
+    task_id: string;
+    file_key: string;
+};
+
 export type HTTPValidationError = {
     detail?: Array<ValidationError>;
-};
-
-export type ItemCreate = {
-    title: string;
-    description?: (string | null);
-};
-
-export type ItemPublic = {
-    title: string;
-    description?: (string | null);
-    id: string;
-    owner_id: string;
-};
-
-export type ItemsPublic = {
-    data: Array<ItemPublic>;
-    count: number;
-};
-
-export type ItemUpdate = {
-    title?: (string | null);
-    description?: (string | null);
 };
 
 export type Message = {
@@ -44,11 +42,53 @@ export type NewPassword = {
     new_password: string;
 };
 
+/**
+ * Request model for checking operation status.
+ */
+export type OperationStatusRequest = {
+    operation_name: string;
+};
+
+/**
+ * Response model for operation status.
+ */
+export type OperationStatusResponse = {
+    done: boolean;
+};
+
 export type PrivateUserCreate = {
     email: string;
     password: string;
     full_name: string;
     is_verified?: boolean;
+};
+
+/**
+ * 用於生成簽名 URL 的請求模型。
+ */
+export type SignedUrlRequest = {
+    file_name: string;
+    content_type: string;
+};
+
+/**
+ * 用於生成簽名 URL 的請求模型。
+ */
+export type SignedUrlRespsonse = {
+    signed_url: string;
+    file_key?: (string | null);
+    file_name?: (string | null);
+};
+
+export type SystemInfoResponse = {
+    gcp_processor_version: string;
+    gcp_project_id: (string | null);
+    gcp_location: string;
+    gcp_processor_id: (string | null);
+};
+
+export type TaskStatusResponse = {
+    status: CeleryTaskStatus;
 };
 
 export type Token = {
@@ -107,37 +147,41 @@ export type ValidationError = {
     type: string;
 };
 
-export type ItemsReadItemsData = {
-    limit?: number;
-    skip?: number;
+export type DocumentGenerateSignedUrlEndpointData = {
+    requestBody: SignedUrlRequest;
 };
 
-export type ItemsReadItemsResponse = (ItemsPublic);
+export type DocumentGenerateSignedUrlEndpointResponse = (SignedUrlRespsonse);
 
-export type ItemsCreateItemData = {
-    requestBody: ItemCreate;
+export type DocumentProcessUploadedFileData = {
+    requestBody: FileProcessedRequest;
 };
 
-export type ItemsCreateItemResponse = (ItemPublic);
+export type DocumentProcessUploadedFileResponse = (FileProcessedResponse);
 
-export type ItemsReadItemData = {
-    id: string;
+export type DocumentConvertProcessedFileToExcelData = {
+    requestBody: ConvertingRequest;
 };
 
-export type ItemsReadItemResponse = (ItemPublic);
+export type DocumentConvertProcessedFileToExcelResponse = (FileProcessedResponse);
 
-export type ItemsUpdateItemData = {
-    id: string;
-    requestBody: ItemUpdate;
+export type DocumentTestData = {
+    requestBody: ConvertingRequest;
 };
 
-export type ItemsUpdateItemResponse = (ItemPublic);
+export type DocumentTestResponse = (unknown);
 
-export type ItemsDeleteItemData = {
-    id: string;
+export type DocumentDownloadFromGcsData = {
+    gcsDownloadPath: string;
 };
 
-export type ItemsDeleteItemResponse = (Message);
+export type DocumentDownloadFromGcsResponse = (SignedUrlRespsonse);
+
+export type DocumentGetOperationData = {
+    requestBody: OperationStatusRequest;
+};
+
+export type DocumentGetOperationResponse = (OperationStatusResponse);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;
@@ -170,6 +214,26 @@ export type PrivateCreateUserData = {
 };
 
 export type PrivateCreateUserResponse = (UserPublic);
+
+export type TasksGetTaskStatusData = {
+    taskId: string;
+};
+
+export type TasksGetTaskStatusResponse = (TaskStatusResponse);
+
+export type TasksGetTaskResultData = {
+    taskId: string;
+};
+
+export type TasksGetTaskResultResponse = ({
+    [key: string]: unknown;
+});
+
+export type TasksCancelTaskData = {
+    taskId: string;
+};
+
+export type TasksCancelTaskResponse = (unknown);
 
 export type UsersReadUsersData = {
     limit?: number;
@@ -233,50 +297,4 @@ export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
 
-// Document-related types
-export type DocumentUploadRequest = {
-    file_name: string;
-    content_type: string;
-};
-
-export type SignedURLResponse = {
-    signed_url: string;
-    file_key: string;
-    file_name: string;
-};
-
-export type DocumentProcessRequest = {
-    file_key: string;
-    file_name: string;
-};
-
-export type DocumentProcessResponse = {
-    task_id: string;
-};
-
-export type DocumentConvertRequest = {
-    file_key: string;
-};
-
-export type DocumentConvertResponse = {
-    task_id: string;
-};
-
-export type TaskStatusResponse = {
-    status: 'PENDING' | 'STARTED' | 'RETRY' | 'FAILURE' | 'SUCCESS';
-};
-
-export type TaskResultResponse = {
-    operation_name?: string;
-    gcs_download_path?: string;
-    status?: string;
-    error?: string;
-};
-
-export type OperationStatusRequest = {
-    operation_name: string;
-};
-
-export type OperationStatusResponse = {
-    done: boolean;
-};
+export type UtilsGetOperationInfoResponse = (SystemInfoResponse);

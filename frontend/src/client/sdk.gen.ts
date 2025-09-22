@@ -3,44 +3,21 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, DocumentUploadRequest, SignedURLResponse, DocumentProcessRequest, DocumentProcessResponse, DocumentConvertRequest, DocumentConvertResponse, TaskStatusResponse, TaskResultResponse, OperationStatusRequest, OperationStatusResponse } from './types.gen';
+import type { DocumentGenerateSignedUrlEndpointData, DocumentGenerateSignedUrlEndpointResponse, DocumentProcessUploadedFileData, DocumentProcessUploadedFileResponse, DocumentConvertProcessedFileToExcelData, DocumentConvertProcessedFileToExcelResponse, DocumentTestData, DocumentTestResponse, DocumentDownloadFromGcsData, DocumentDownloadFromGcsResponse, DocumentGetOperationData, DocumentGetOperationResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, TasksGetTaskStatusData, TasksGetTaskStatusResponse, TasksGetTaskResultData, TasksGetTaskResultResponse, TasksCancelTaskData, TasksCancelTaskResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, UtilsGetOperationInfoResponse } from './types.gen';
 
-export class ItemsService {
+export class DocumentService {
     /**
-     * Read Items
-     * Retrieve items.
-     * @param data The data for the request.
-     * @param data.skip
-     * @param data.limit
-     * @returns ItemsPublic Successful Response
-     * @throws ApiError
-     */
-    public static readItems(data: ItemsReadItemsData = {}): CancelablePromise<ItemsReadItemsResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/items/',
-            query: {
-                skip: data.skip,
-                limit: data.limit
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Create Item
-     * Create new item.
+     * Generate Signed Url Endpoint
+     * receive file information and return a signed url for frontend direct upload to GCS
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns ItemPublic Successful Response
+     * @returns SignedUrlRespsonse Successful Response
      * @throws ApiError
      */
-    public static createItem(data: ItemsCreateItemData): CancelablePromise<ItemsCreateItemResponse> {
+    public static generateSignedUrlEndpoint(data: DocumentGenerateSignedUrlEndpointData): CancelablePromise<DocumentGenerateSignedUrlEndpointResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/items/',
+            url: '/api/v1/document/upload',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -50,19 +27,79 @@ export class ItemsService {
     }
     
     /**
-     * Read Item
-     * Get item by ID.
+     * Process Uploaded File
+     * Receive the file upload completion notification and then add the document AI task to the Celery task queue.
      * @param data The data for the request.
-     * @param data.id
-     * @returns ItemPublic Successful Response
+     * @param data.requestBody
+     * @returns FileProcessedResponse Successful Response
      * @throws ApiError
      */
-    public static readItem(data: ItemsReadItemData): CancelablePromise<ItemsReadItemResponse> {
+    public static processUploadedFile(data: DocumentProcessUploadedFileData): CancelablePromise<DocumentProcessUploadedFileResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/document/process',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Convert Processed File To Excel
+     * convert the processed file to excel
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns FileProcessedResponse Successful Response
+     * @throws ApiError
+     */
+    public static convertProcessedFileToExcel(data: DocumentConvertProcessedFileToExcelData): CancelablePromise<DocumentConvertProcessedFileToExcelResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/document/convert',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Test
+     * convert the processed file to excel
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static test(data: DocumentTestData): CancelablePromise<DocumentTestResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/document/test',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Download From Gcs
+     * download excel file from gcs
+     * @param data The data for the request.
+     * @param data.gcsDownloadPath
+     * @returns SignedUrlRespsonse Successful Response
+     * @throws ApiError
+     */
+    public static downloadFromGcs(data: DocumentDownloadFromGcsData): CancelablePromise<DocumentDownloadFromGcsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/items/{id}',
-            path: {
-                id: data.id
+            url: '/api/v1/document/download',
+            query: {
+                gcs_download_path: data.gcsDownloadPath
             },
             errors: {
                 422: 'Validation Error'
@@ -71,44 +108,19 @@ export class ItemsService {
     }
     
     /**
-     * Update Item
-     * Update an item.
+     * Get Operation
+     * get the done status of the document ai operation
      * @param data The data for the request.
-     * @param data.id
      * @param data.requestBody
-     * @returns ItemPublic Successful Response
+     * @returns OperationStatusResponse Successful Response
      * @throws ApiError
      */
-    public static updateItem(data: ItemsUpdateItemData): CancelablePromise<ItemsUpdateItemResponse> {
+    public static getOperation(data: DocumentGetOperationData): CancelablePromise<DocumentGetOperationResponse> {
         return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/v1/items/{id}',
-            path: {
-                id: data.id
-            },
+            method: 'POST',
+            url: '/api/v1/document/operation',
             body: data.requestBody,
             mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Delete Item
-     * Delete an item.
-     * @param data The data for the request.
-     * @param data.id
-     * @returns Message Successful Response
-     * @throws ApiError
-     */
-    public static deleteItem(data: ItemsDeleteItemData): CancelablePromise<ItemsDeleteItemResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v1/items/{id}',
-            path: {
-                id: data.id
-            },
             errors: {
                 422: 'Validation Error'
             }
@@ -228,6 +240,71 @@ export class PrivateService {
             url: '/api/v1/private/users/',
             body: data.requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class TasksService {
+    /**
+     * Get Task Status
+     * Get the status of a Celery task
+     * @param data The data for the request.
+     * @param data.taskId
+     * @returns TaskStatusResponse Successful Response
+     * @throws ApiError
+     */
+    public static getTaskStatus(data: TasksGetTaskStatusData): CancelablePromise<TasksGetTaskStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/task/{task_id}/status',
+            path: {
+                task_id: data.taskId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Task Result
+     * Get the result of a completed Celery task
+     * @param data The data for the request.
+     * @param data.taskId
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static getTaskResult(data: TasksGetTaskResultData): CancelablePromise<TasksGetTaskResultResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/task/{task_id}/result',
+            path: {
+                task_id: data.taskId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Cancel Task
+     * Cancel a Celery task
+     * @param data The data for the request.
+     * @param data.taskId
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static cancelTask(data: TasksCancelTaskData): CancelablePromise<TasksCancelTaskResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/task/{task_id}',
+            path: {
+                task_id: data.taskId
+            },
             errors: {
                 422: 'Validation Error'
             }
@@ -465,157 +542,17 @@ export class UtilsService {
             url: '/api/v1/utils/health-check/'
         });
     }
-}
-
-export class DocumentService {
+    
     /**
-     * Upload Document - Get signed URL for file upload
-     * @param data The data for the request
-     * @returns SignedURLResponse
+     * Get Operation Info
+     * Get GCP process version and configuration information.
+     * @returns SystemInfoResponse Successful Response
      * @throws ApiError
      */
-    public static uploadDocument(data: DocumentUploadRequest): CancelablePromise<SignedURLResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/document/upload',
-            body: data,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-
-    /**
-     * Process Document - Start document processing task
-     * @param data The data for the request
-     * @returns DocumentProcessResponse
-     * @throws ApiError
-     */
-    public static processDocument(data: DocumentProcessRequest): CancelablePromise<DocumentProcessResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/document/process',
-            body: data,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-
-    /**
-     * Convert Document - Convert processed document to Excel
-     * @param data The data for the request
-     * @returns DocumentConvertResponse
-     * @throws ApiError
-     */
-    public static convertDocument(data: DocumentConvertRequest): CancelablePromise<DocumentConvertResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/document/convert',
-            body: data,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-
-    /**
-     * Get Operation Status - Check if a Google Cloud operation is done
-     * @param data The data for the request
-     * @param data.operation_name The operation name
-     * @returns OperationStatusResponse
-     * @throws ApiError
-     */
-    public static getOperationStatus(data: OperationStatusRequest): CancelablePromise<OperationStatusResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/document/operation',
-            body: data,
-            mediaType: 'application/json',
-            errors: {
-                400: 'Bad Request',
-                404: 'Operation not found'
-            }
-        });
-    }
-
-    /**
-     * Download Document - Download the converted Excel file
-     * @param gcsDownloadPath The GCS download path
-     * @returns SignedURLResponse
-     * @throws ApiError
-     */
-    public static downloadDocument(gcsDownloadPath: string): CancelablePromise<SignedURLResponse> {
+    public static getOperationInfo(): CancelablePromise<UtilsGetOperationInfoResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: `/api/v1/document/download`,
-            query: {
-                gcs_download_path: gcsDownloadPath
-            },
-            errors: {
-                404: 'File not found'
-            }
-        });
-    }
-
-}
-
-export class TaskService {
-    /**
-     * Cancel Task
-     * Cancel a running Celery task
-     * @param taskId The task ID to cancel
-     * @returns Message
-     * @throws ApiError
-     */
-
-     /**
-     * Get Task Status - Get the status of a Celery task
-     * @param taskId The task ID
-     * @returns TaskStatusResponse
-     * @throws ApiError
-     */
-    public static getTaskStatus(taskId: string): CancelablePromise<TaskStatusResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: `/api/v1/task/${taskId}/status`,
-            errors: {
-                404: 'Task not found'
-            }
-        });   
-    }
-    /**
-     * Get Task Result - Get the result of a completed Celery task
-     * @param taskId The task ID
-     * @returns TaskResultResponse
-     * @throws ApiError
-     */
-    public static getTaskResult(taskId: string): CancelablePromise<TaskResultResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: `/api/v1/task/${taskId}/result`,
-            errors: {
-                404: 'Task not found'
-            }
-        });
-    }
-
-    /**
-     * Cancel Task - Cancel a running Celery task
-     * @param taskId The task ID to cancel
-     * @returns Message
-     * @throws ApiError
-     */
-    public static cancelTask(taskId: string): CancelablePromise<{ message: string }> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: `/api/v1/task/${taskId}`,
-            errors: {
-                404: 'Task not found'
-            }
+            url: '/api/v1/utils/system/info'
         });
     }
 }
