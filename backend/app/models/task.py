@@ -13,3 +13,7 @@ class CeleryTaskStatus(str, Enum):
 
 class TaskStatusResponse(BaseModel):
     status: CeleryTaskStatus
+
+
+class TaskResultResponse(BaseModel):
+    result: dict

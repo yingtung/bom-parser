@@ -297,6 +297,19 @@ export const SystemInfoResponseSchema = {
     title: 'SystemInfoResponse'
 } as const;
 
+export const TaskResultResponseSchema = {
+    properties: {
+        result: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Result'
+        }
+    },
+    type: 'object',
+    required: ['result'],
+    title: 'TaskResultResponse'
+} as const;
+
 export const TaskStatusResponseSchema = {
     properties: {
         status: {

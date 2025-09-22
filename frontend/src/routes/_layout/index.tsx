@@ -156,7 +156,7 @@ function Dashboard() {
 
             // Step 5: 取得任務結果以取得 operation_name，並輪詢作業狀態
             const resultResp = await TasksService.getTaskResult({ taskId: task_id }) as any
-            const operationName = resultResp?.operation_name
+            const operationName = resultResp?.result?.operation_name as string
 
             if (!operationName) {
               throw new Error("任務結果中沒有 operation_name")
@@ -193,7 +193,7 @@ function Dashboard() {
 
                       const resultResp =
                         await TasksService.getTaskResult({ taskId: convertTaskId })
-                      const { gcs_download_path } = resultResp
+                      const gcs_download_path = resultResp?.result?.gcs_download_path as string
 
                       if (gcs_download_path) {
                         setDownloadUrl(gcs_download_path)
