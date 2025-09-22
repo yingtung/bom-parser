@@ -110,21 +110,6 @@ def download_and_process_docai_results(
         bom_df = pd.DataFrame([bom.dict() for bom in all_bom])
         cpl_df = pd.DataFrame([cpl.dict() for cpl in all_cpl])
 
-        # # Sort BOM items by page and bom_pt (as integer)
-        # if not bom_df.empty:
-        #     bom_df["bom_pt_numeric"] = bom_df["bom_pt"].apply(extract_numeric_value)
-        #     bom_df = bom_df.sort_values(by=["page", "bom_pt_numeric"]).drop(
-        #         "bom_pt_numeric", axis=1
-        #     )
-
-        # # Sort CPL items by page and cpl_cut_piece (as integer)
-        # if not cpl_df.empty:
-        #     cpl_df["cpl_cut_piece_numeric"] = cpl_df["cpl_cut_piece"].apply(
-        #         extract_numeric_value
-        #     )
-        #     cpl_df = cpl_df.sort_values(by=["page", "cpl_cut_piece_numeric"]).drop(
-        #         "cpl_cut_piece_numeric", axis=1
-        #     )
         # Save to temporary Excel file
         import io
 

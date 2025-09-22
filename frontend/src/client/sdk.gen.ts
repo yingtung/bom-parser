@@ -274,7 +274,7 @@ export class TasksService {
      * Get the result of a completed Celery task
      * @param data The data for the request.
      * @param data.taskId
-     * @returns unknown Successful Response
+     * @returns TaskResultResponse Successful Response
      * @throws ApiError
      */
     public static getTaskResult(data: TasksGetTaskResultData): CancelablePromise<TasksGetTaskResultResponse> {

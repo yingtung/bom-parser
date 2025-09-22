@@ -129,7 +129,7 @@ def extract_items(document: documentai.Document) -> Items:
         cpl_length = str(row.get("CPL-length", ""))
         cpl_size = str(row.get("CPL-size", ""))
 
-        if (
+        if bool(bom_description) & (
             bool(bom_pt)
             | bool(bom_description)
             | bool(bom_quantity)

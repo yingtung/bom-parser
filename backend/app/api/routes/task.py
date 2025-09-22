@@ -2,7 +2,7 @@ from celery.result import AsyncResult
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.deps import get_current_user
-from app.models.task import CeleryTaskStatus, TaskStatusResponse
+from app.models.task import CeleryTaskStatus, TaskResultResponse, TaskStatusResponse
 from app.tasks import celery_app
 
 router = APIRouter(
@@ -50,6 +50,7 @@ async def get_task_status(task_id: str) -> TaskStatusResponse:
 @router.get(
     "/{task_id}/result",
     description="Get the result of a completed Celery task",
+    response_model=TaskResultResponse,
 )
 async def get_task_result(task_id: str) -> dict:
     """
@@ -63,7 +64,7 @@ async def get_task_result(task_id: str) -> dict:
     """
     try:
         result = AsyncResult(task_id, app=celery_app).result
-        return result
+        return TaskResultResponse(result=result)
 
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Task not found: {str(e)}")
