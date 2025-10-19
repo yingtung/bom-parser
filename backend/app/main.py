@@ -11,8 +11,23 @@ def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
 
-if settings.SENTRY_DSN and not settings.is_local:
-    sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
+def before_send_transaction(event):
+    ommit_transactions = [
+        "/api/v1/utils/health-check",
+    ]
+    if event.transaction in ommit_transactions:
+        return None
+    return event
+
+
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=str(settings.SENTRY_DSN),
+        enable_tracing=True,
+        before_send_transaction=before_send_transaction,
+        environment=settings.ENVIRONMENT,
+        traces_sample_rate=0.1,
+    )
 
 
 app = FastAPI(
