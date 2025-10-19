@@ -54,7 +54,6 @@ def group_entities_by_position(
     current_y = entities_with_pos[0]["avg_y"]
 
     for item in entities_with_pos:
-        logger.info(f"Item: {item['page']}, {item['avg_y']}, {item['avg_x']}")
         if abs(item["avg_y"] - current_y) > y_threshold:
             # it means the entity is in the next row
 
@@ -70,7 +69,6 @@ def group_entities_by_position(
     for row_items in grouped_items:
         # sort the row_items by the avg_x
         row_items.sort(key=lambda item: item["avg_x"])
-        logger.info(f"Row items: {len(row_items)}")
         for item in row_items:
             entity = item["entity"]
             entity_type = entity.type_
